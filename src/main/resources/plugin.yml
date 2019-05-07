@@ -1,0 +1,10 @@
+name: Statistics
+version: ${project.version}
+main: statistics.main.Statistics
+api-version: 1.14
+authors: [vteven]
+description: Track minecraft user statistics
+commands:
+  statistics:
+    description: Your description
+    usage: /statistics
