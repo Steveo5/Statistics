@@ -8,6 +8,8 @@ public class StatisticsPlayer {
 
     private Player base;
     private Session session;
+    private boolean isAfk;
+    private long lastActiveTime = System.currentTimeMillis();
 
     protected StatisticsPlayer(Player base) {
         this.base = base;
@@ -28,6 +30,35 @@ public class StatisticsPlayer {
     public void closeSession() {
         session.setFinished(new Date());
         session.save(this);
+    }
+
+    public long getLastActiveTime() {
+        return this.lastActiveTime;
+    }
+
+    public boolean isAfk() {
+        return this.isAfk;
+    }
+
+    public void setAfk(boolean isAfk) {
+
+        // Start new session if the player was afk and now isn't
+        if(this.isAfk && !isAfk) {
+            this.closeSession();
+            Statistics.createSession(this, SessionType.NORMAL);
+            System.out.println(this.getBase().getName() + " is now active");
+        }
+
+        this.isAfk = isAfk;
+
+        if(!isAfk) {
+            this.lastActiveTime = System.currentTimeMillis();
+        } else {
+            // Start new session if the player is set to afk
+            this.closeSession();
+            Statistics.createSession(this, SessionType.AFK);
+            System.out.println(this.getBase().getName() + " is now afk");
+        }
     }
 
 }

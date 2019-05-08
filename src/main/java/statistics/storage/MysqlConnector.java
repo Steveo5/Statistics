@@ -1,19 +1,21 @@
 package statistics.storage;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import statistics.main.Session;
 import statistics.main.Statistics;
+import statistics.main.StatisticsPlayer;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Date;
 
 public class MysqlConnector {
 
     private ConnectionPoolManager pool;
-
+    private java.text.SimpleDateFormat sdf =
+            new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private Statistics plugin;
 
     public MysqlConnector(Statistics plugin) {
@@ -39,23 +41,56 @@ public class MysqlConnector {
                 "PRIMARY KEY (`id`)" +
                 ");";
 
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
         try {
-            pool.getConnection().createStatement().execute(sessionTableSql);
+            conn = pool.getConnection();
+            stmt = conn.prepareStatement(sessionTableSql);
+            stmt.execute(sessionTableSql);
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            pool.close(conn, stmt, null);
+
+            createPingTable();
+        }
+
+    }
+
+    private void createPingTable() {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        String pingTableSql = "CREATE TABLE IF NOT EXISTS `ping` (" +
+                "`id` INT NOT NULL AUTO_INCREMENT," +
+                "`user_id` VARCHAR(255) NOT NULL," +
+                "`ping` INT NOT NULL," +
+                "`created_at` DATETIME NOT NULL," +
+                "PRIMARY KEY (`id`)" +
+                ");";
+
+        try {
+            conn = pool.getConnection();
+            stmt = conn.prepareStatement(pingTableSql);
+            stmt.execute(pingTableSql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            pool.close(conn, stmt, null);
         }
     }
 
-    public void saveSession(Session session) {
-        java.text.SimpleDateFormat sdf =
-                new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public void saveSession(StatisticsPlayer player) {
+
+        Session session = player.getSession();
 
         String started = session.getStarted() == null ? null : sdf.format(session.getStarted());
         String finished = session.getFinished() == null ? sdf.format(new Date()) : sdf.format(session.getFinished());
         String sessionId = session.getSessionId().toString();
-        String userId = session.getPlayer().getUniqueId().toString();
-        String ip = ((Player) session.getPlayer()).getAddress().getAddress().getHostAddress();
-        String world = ((Player) session.getPlayer()).getWorld().getUID().toString();
+        String userId = player.getBase().getUniqueId().toString();
+        String ip = player.getBase().getAddress().getAddress().getHostAddress();
+        String world =  player.getBase().getWorld().getUID().toString();
         String type = session.getType().toString();
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin,
@@ -99,6 +134,28 @@ public class MysqlConnector {
             e.printStackTrace();
         } finally {
             pool.close(conn, statement, null);
+        }
+    }
+
+    public void savePing(String uuid, int ping) {
+        String sql = "INSERT INTO ping (user_id, ping, created_at) VALUES (?, ?, ?);";
+
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = pool.getConnection();
+            stmt = conn.prepareStatement(sql);
+
+            stmt.setString(1, uuid);
+            stmt.setInt(2, ping);
+            stmt.setString(3, sdf.format(new Date()));
+
+            stmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            pool.close(conn, stmt, null);
         }
     }
 

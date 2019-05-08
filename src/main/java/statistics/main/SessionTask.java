@@ -9,6 +9,7 @@ public class SessionTask extends BukkitRunnable {
         for(StatisticsPlayer player : Statistics.getStatisticsPlayers()) {
             if(!player.getBase().isOnline()) {
                 player.closeSession();
+                Statistics.unloadStatisticsPlayer(player.getBase());
             } else {
                 player.getSession().save(player);
             }

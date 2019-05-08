@@ -1,7 +1,5 @@
 package statistics.main;
 
-import org.bukkit.OfflinePlayer;
-
 import java.util.Date;
 import java.util.UUID;
 
@@ -44,7 +42,7 @@ public class Session {
      * Save to database
      */
     public void save(StatisticsPlayer player) {
-        Statistics.getMysqlConnector().saveSession(this);
+        Statistics.getMysqlConnector().saveSession(player);
     }
 
 }

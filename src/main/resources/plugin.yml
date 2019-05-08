@@ -6,5 +6,5 @@ authors: [vteven]
 description: Track minecraft user statistics
 commands:
   statistics:
-    description: Your description
-    usage: /statistics
+    description: Show statistics about a player
+    usage: /statistics [player name]
