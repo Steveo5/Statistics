@@ -29,8 +29,7 @@ public class CmdStatistics implements CommandExecutor {
         }
 
         if(args[0].equalsIgnoreCase("reload")) {
-            plugin.reloadConfig();
-            Statistics.getMysqlConnector().reload();
+            Statistics.reload();
             sender.sendMessage(ChatColor.GREEN + "Config was reloaded successfully");
         } else {
             Player p = Bukkit.getPlayer(args[0]);

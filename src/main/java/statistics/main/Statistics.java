@@ -3,6 +3,7 @@ package statistics.main;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import statistics.commands.CmdStatistics;
 import statistics.listener.PlayerListener;
 import statistics.listener.SessionListener;
@@ -14,17 +15,21 @@ public final class Statistics extends JavaPlugin {
 
     private static MysqlConnector mysqlConnector;
     private static HashMap<UUID, StatisticsPlayer> statisticsPlayers = new HashMap<>();
+    private static Statistics statistics;
+    private BukkitTask pingTask;
 
     @Override
     public void onEnable() {
+        statistics = this;
         this.saveDefaultConfig();
         mysqlConnector = new MysqlConnector(this);
         this.getServer().getPluginManager().registerEvents(new SessionListener(), this);
         this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 
         new SessionTask().runTaskTimer(this, 20L * 25L, 20L * 25L);
-        new AfkTask().runTaskTimer(this, 20L * 20L, 20L * 20L);
-        new PingTask().runTaskTimer(this, (20L * 60L) * 10L, (20L * 60L) * 10L);
+        new AfkTask(this).runTaskTimer(this, 20L * 20L, 20L * 20L);
+        pingTask = new PingTask().runTaskTimer(this, (20L * 60L) * getConfig().getInt("ping-interval"),
+                (20L * 60L) * getConfig().getInt("ping-interval"));
 
         this.getCommand("statistics").setExecutor(new CmdStatistics(this));
     }
@@ -70,5 +75,15 @@ public final class Statistics extends JavaPlugin {
 
     public static Collection<StatisticsPlayer> getStatisticsPlayers() {
         return statisticsPlayers.values();
+    }
+
+    // Reload the entire plugin, including timers, config etc
+    public static void reload() {
+        statistics.reloadConfig();
+        getMysqlConnector().reload();
+        statistics.pingTask.cancel();
+        statistics.pingTask = new PingTask().runTaskTimer(statistics,
+                (20L * 60L) * statistics.getConfig().getInt("ping-interval"),
+                (20L * 60L) * statistics.getConfig().getInt("ping-interval"));
     }
 }

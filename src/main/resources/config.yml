@@ -1,3 +1,11 @@
+# Time in seconds between pings, used to get the min, max and average pings
+# for players and server
+ping-interval: 300
+
+# Time a player is made afk after standing still and not interacting with
+# the world
+afk-timeout: 300
+
 mysql:
   host: localhost
   port: 3306

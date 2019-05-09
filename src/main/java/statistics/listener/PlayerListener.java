@@ -1,7 +1,12 @@
 package statistics.listener;
 
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 import statistics.main.Statistics;
 
@@ -25,6 +30,31 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent evt) {
         Statistics.getStatisticsPlayer(evt.getPlayer()).setAfk(false);
+        Statistics.getMysqlConnector().saveMessage(evt.getPlayer(), evt.getMessage());
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent evt) {
+        Statistics.getMysqlConnector().saveDeath(evt.getEntity());
+    }
+
+    @EventHandler
+    public void onPlayerKill(EntityDeathEvent evt) {
+        Player killer = evt.getEntity().getKiller();
+
+        if(killer != null) {
+            Statistics.getMysqlConnector().saveKill(killer, evt.getEntity());
+        }
+    }
+
+    @EventHandler
+    public void onPlayerBreakBlock(BlockBreakEvent evt) {
+        Statistics.getMysqlConnector().saveBlockBreak(evt.getPlayer(), evt.getBlock());
+    }
+
+    @EventHandler
+    public void onPlayerPlaceBlock(BlockPlaceEvent evt) {
+        Statistics.getMysqlConnector().saveBlockPlace(evt.getPlayer(), evt.getBlock());
     }
 
 }
