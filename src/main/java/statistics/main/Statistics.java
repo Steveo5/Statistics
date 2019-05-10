@@ -17,6 +17,7 @@ public final class Statistics extends JavaPlugin {
     private static HashMap<UUID, StatisticsPlayer> statisticsPlayers = new HashMap<>();
     private static Statistics statistics;
     private BukkitTask pingTask;
+    private static StatisticsReport report;
 
     @Override
     public void onEnable() {
@@ -32,6 +33,8 @@ public final class Statistics extends JavaPlugin {
                 (20L * 60L) * getConfig().getInt("ping-interval"));
 
         this.getCommand("statistics").setExecutor(new CmdStatistics(this));
+
+        report = new StatisticsReport();
     }
 
     @Override
@@ -85,5 +88,9 @@ public final class Statistics extends JavaPlugin {
         statistics.pingTask = new PingTask().runTaskTimer(statistics,
                 (20L * 60L) * statistics.getConfig().getInt("ping-interval"),
                 (20L * 60L) * statistics.getConfig().getInt("ping-interval"));
+    }
+
+    public static StatisticsReport getStatisticsReport() {
+        return report;
     }
 }

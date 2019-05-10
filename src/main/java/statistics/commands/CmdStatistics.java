@@ -22,10 +22,14 @@ public class CmdStatistics implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(args.length < 1) {
             if(!(sender instanceof Player)) {
-                return false;
+                sender.sendMessage(getStatistics(null));
+                sender.sendMessage(Statistics.getMysqlConnector().getHoursPlayed(null).toString());
             } else {
-                showStatistics(Statistics.getStatisticsPlayer(((Player) sender).getUniqueId()));
+                sender.sendMessage(getStatistics(null));
+                sender.sendMessage(Statistics.getMysqlConnector().getHoursPlayed(null).toString());
             }
+
+            return true;
         }
 
         if(args[0].equalsIgnoreCase("reload")) {
@@ -37,15 +41,16 @@ public class CmdStatistics implements CommandExecutor {
             if(p == null) {
                 sender.sendMessage(ChatColor.RED + "You have entered an invalid player name");
             } else {
-                showStatistics(Statistics.getStatisticsPlayer(p.getUniqueId()));
+                sender.sendMessage(getStatistics(p));
+                sender.sendMessage(Statistics.getMysqlConnector().getHoursPlayed(null) + " hours played");
             }
         }
 
         return true;
     }
 
-    public void showStatistics(StatisticsPlayer player) {
-
+    public String getStatistics(Player player) {
+        return Statistics.getStatisticsReport().getPing(player) + "";
     }
 
 }

@@ -1,5 +1,7 @@
 package statistics.storage;
 
+import com.google.common.reflect.ClassPath;
+import com.sun.rowset.CachedRowSetImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -9,11 +11,13 @@ import statistics.main.Session;
 import statistics.main.Statistics;
 import statistics.main.StatisticsPlayer;
 
+import javax.sql.rowset.CachedRowSet;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Date;
+import java.util.HashMap;
 
 public class MysqlConnector {
 
@@ -22,210 +26,25 @@ public class MysqlConnector {
             new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private Statistics plugin;
 
+    @SuppressWarnings("UnstableApiUsage")
     public MysqlConnector(Statistics plugin) {
         this.plugin = plugin;
         pool = new ConnectionPoolManager(plugin);
-        this.setupTables();
+
+        // Load all migrations via reflection
+        try {
+            ClassPath path = ClassPath.from(plugin.getClass().getClassLoader());
+            for (ClassPath.ClassInfo info : path.getTopLevelClassesRecursive("statistics.storage.migrations")) {
+                Class clazz = Class.forName(info.getName(), true, plugin.getClass().getClassLoader());
+                clazz.getConstructors()[0].newInstance(pool);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void onDisable() {
         pool.closePool();
-    }
-
-
-    public void setupTables() {
-        String sessionTableSql = "CREATE TABLE IF NOT EXISTS `session` (" +
-                "`id` VARCHAR(255) NOT NULL," +
-                "`user_id` VARCHAR(255) NOT NULL," +
-                "`login_time` DATETIME NOT NULL," +
-                "`logout_time` DATETIME," +
-                "`ip` VARCHAR(255) NOT NULL," +
-                "`world_id` VARCHAR(255) NOT NULL," +
-                "`type` VARCHAR(255) NOT NULL," +
-                "PRIMARY KEY (`id`)" +
-                ");";
-
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        try {
-            conn = pool.getConnection();
-            stmt = conn.prepareStatement(sessionTableSql);
-            stmt.execute(sessionTableSql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            pool.close(conn, stmt, null);
-
-            createPingTable();
-        }
-
-    }
-
-    private void createPingTable() {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        String pingTableSql = "CREATE TABLE IF NOT EXISTS `ping` (" +
-                "`id` INT NOT NULL AUTO_INCREMENT," +
-                "`user_id` VARCHAR(255) NOT NULL," +
-                "`ping` INT NOT NULL," +
-                "`created_at` DATETIME NOT NULL," +
-                "PRIMARY KEY (`id`)" +
-                ");";
-
-        try {
-            conn = pool.getConnection();
-            stmt = conn.prepareStatement(pingTableSql);
-            stmt.execute(pingTableSql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            pool.close(conn, stmt, null);
-
-            createDeathTable();
-        }
-    }
-
-    public void createDeathTable() {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        String deathTableSql = "CREATE TABLE IF NOT EXISTS `death` (" +
-                "`id` INT NOT NULL AUTO_INCREMENT," +
-                "`user_id` VARCHAR(255) NOT NULL," +
-                "`world` VARCHAR(255) NOT NULL," +
-                "`x` DOUBLE NOT NULL," +
-                "`y` DOUBLE NOT NULL," +
-                "`z` DOUBLE NOT NULL," +
-                "`cause` VARCHAR(255) NOT NULL," +
-                "`created_at` DATETIME NOT NULL," +
-                "PRIMARY KEY (`id`)" +
-                ");";
-
-        try {
-            conn = pool.getConnection();
-            stmt = conn.prepareStatement(deathTableSql);
-            stmt.execute(deathTableSql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            pool.close(conn, stmt, null);
-
-            createKillTable();
-        }
-    }
-
-    public void createKillTable() {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        String killTableSql = "CREATE TABLE IF NOT EXISTS `kill` (" +
-                "`id` INT NOT NULL AUTO_INCREMENT," +
-                "`user_id` VARCHAR(255) NOT NULL," +
-                "`world` VARCHAR(255) NOT NULL," +
-                "`entity_id` VARCHAR(255) NOT NULL," +
-                "`entity_type` VARCHAR(255) NOT NULL," +
-                "`created_at` DATETIME NOT NULL," +
-                "PRIMARY KEY (`id`)" +
-                ");";
-
-        try {
-            conn = pool.getConnection();
-            stmt = conn.prepareStatement(killTableSql);
-            stmt.execute(killTableSql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            pool.close(conn, stmt, null);
-
-            createBlockBreakTable();
-        }
-    }
-
-    public void createBlockBreakTable() {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        String blockTableSql = "CREATE TABLE IF NOT EXISTS `block_break` (" +
-                "`id` INT NOT NULL AUTO_INCREMENT," +
-                "`user_id` VARCHAR(255) NOT NULL," +
-                "`world` VARCHAR(255) NOT NULL," +
-                "`x` DOUBLE NOT NULL," +
-                "`y` DOUBLE NOT NULL," +
-                "`z` DOUBLE NOT NULL," +
-                "`block_type` VARCHAR(255) NOT NULL," +
-                "`created_at` DATETIME NOT NULL," +
-                "PRIMARY KEY (`id`)" +
-                ");";
-
-        try {
-            conn = pool.getConnection();
-            stmt = conn.prepareStatement(blockTableSql);
-            stmt.execute(blockTableSql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            pool.close(conn, stmt, null);
-
-            createBlockPlaceTable();
-        }
-    }
-
-    public void createBlockPlaceTable() {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        String blockTableSql = "CREATE TABLE IF NOT EXISTS `block_place` (" +
-                "`id` INT NOT NULL AUTO_INCREMENT," +
-                "`user_id` VARCHAR(255) NOT NULL," +
-                "`world` VARCHAR(255) NOT NULL," +
-                "`x` DOUBLE NOT NULL," +
-                "`y` DOUBLE NOT NULL," +
-                "`z` DOUBLE NOT NULL," +
-                "`block_type` VARCHAR(255) NOT NULL," +
-                "`created_at` DATETIME NOT NULL," +
-                "PRIMARY KEY (`id`)" +
-                ");";
-
-        try {
-            conn = pool.getConnection();
-            stmt = conn.prepareStatement(blockTableSql);
-            stmt.execute(blockTableSql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            pool.close(conn, stmt, null);
-
-            createMessagesTable();
-        }
-    }
-
-    public void createMessagesTable() {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        String messageTableSql = "CREATE TABLE IF NOT EXISTS `message` (" +
-                "`id` INT NOT NULL AUTO_INCREMENT," +
-                "`user_id` VARCHAR(255) NOT NULL," +
-                "`world` VARCHAR(255) NOT NULL," +
-                "`x` DOUBLE NOT NULL," +
-                "`y` DOUBLE NOT NULL," +
-                "`z` DOUBLE NOT NULL," +
-                "`message` VARCHAR(255) NOT NULL," +
-                "`created_at` DATETIME NOT NULL," +
-                "PRIMARY KEY (`id`)" +
-                ");";
-
-        try {
-            conn = pool.getConnection();
-            stmt = conn.prepareStatement(messageTableSql);
-            stmt.execute(messageTableSql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            pool.close(conn, stmt, null);
-        }
     }
 
     public void saveSession(StatisticsPlayer player) {
@@ -413,7 +232,7 @@ public class MysqlConnector {
             stmt.setDouble(4, y);
             stmt.setDouble(5, z);
             stmt.setString(6, blockType);
-            stmt.setString(5, sdf.format(new Date()));
+            stmt.setString(7, sdf.format(new Date()));
 
             stmt.execute();
         } catch (SQLException e) {
@@ -453,7 +272,7 @@ public class MysqlConnector {
             stmt.setDouble(4, y);
             stmt.setDouble(5, z);
             stmt.setString(6, blockType);
-            stmt.setString(5, sdf.format(new Date()));
+            stmt.setString(7, sdf.format(new Date()));
 
             stmt.execute();
         } catch (SQLException e) {
@@ -505,7 +324,134 @@ public class MysqlConnector {
     public void reload() {
         pool.closePool();
         pool = new ConnectionPoolManager(plugin);
-        this.setupTables();
+    }
+
+    private CachedRowSet query(String sql) {
+
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = pool.getConnection();
+            stmt = conn.prepareStatement(sql);
+            CachedRowSet rowset = new CachedRowSetImpl();
+
+            rs = stmt.executeQuery();
+            rowset.populate(rs);
+
+            return rowset;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            pool.close(conn, stmt, rs);
+        }
+
+        return null;
+    }
+
+    public HashMap<String, HashMap<String, String>> getPing(String uuid) {
+        String minSql = "SELECT user_id, ping FROM ping WHERE ping = " +
+                "( SELECT MIN(ping) FROM ping " + getWhereClause(uuid) + ")";
+        String maxSql = "SELECT user_id, ping FROM ping WHERE ping = " +
+                "( SELECT MAX(ping) FROM ping " + getWhereClause(uuid) + ")";
+        String avgSql = "SELECT AVG(ping) FROM ping " + getWhereClause(uuid) + ";";
+
+        CachedRowSet minResults = query(minSql);
+        CachedRowSet maxResults = query(maxSql);
+        CachedRowSet avgResults = query(avgSql);
+
+        HashMap<String, HashMap<String, String>> ping = new HashMap<>();
+        HashMap<String, String> min = new HashMap<>(), max = new HashMap<>(), avg = new HashMap<>();;
+
+        try {
+            if(minResults.next()) {
+                min.put("userId", minResults.getString(1));
+                min.put("ping", minResults.getString(2));
+            }
+
+            if(maxResults.next()) {
+                max.put("userId", maxResults.getString(1));
+                max.put("ping", maxResults.getString(2));
+            }
+
+            if(avgResults.next()) {
+                avg.put("ping", avgResults.getString(1));
+            }
+
+            ping.put("min", min);
+            ping.put("max", max);
+            ping.put("avg", avg);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return ping;
+    }
+
+    public HashMap<String, HashMap<String, String>> getHoursPlayed(String uuid) {
+        String hoursSql = "SELECT SUM(TIME_TO_SEC(TIMEDIFF(logout_time, login_time))/3600) " +
+                "total_hours from session " + getWhereClause(uuid);
+        String afkSql = "SELECT SUM(TIME_TO_SEC(TIMEDIFF(logout_time, login_time))/3600) " +
+                "total_hours from session WHERE type LIKE 'AFK' " +
+                (uuid == null || uuid.isEmpty() ? "" : " AND user_id LIKE '" + uuid + "'");
+        String minSql = "SELECT user_id, TIME_TO_SEC(TIMEDIFF(logout_time, login_time))/3600 " +
+                "FROM session WHERE TIME_TO_SEC(TIMEDIFF(logout_time, login_time))/3600 = " +
+                "( SELECT MIN(TIME_TO_SEC(TIMEDIFF(logout_time, login_time))/3600) AS min_hours FROM session " + getWhereClause(uuid) + ")";
+        String maxSql = "SELECT user_id, TIME_TO_SEC(TIMEDIFF(logout_time, login_time))/3600 AS hours " +
+                "FROM session WHERE TIME_TO_SEC(TIMEDIFF(logout_time, login_time))/3600 = " +
+                "( SELECT MAX(TIME_TO_SEC(TIMEDIFF(logout_time, login_time))/3600) AS max_hours FROM session " + getWhereClause(uuid) + ")";
+        String avgSql = "SELECT AVG(TIME_TO_SEC(TIMEDIFF(logout_time, login_time))/3600) FROM session " + getWhereClause(uuid) + ";";
+
+        CachedRowSet minResults = query(minSql);
+        CachedRowSet maxResults = query(maxSql);
+        CachedRowSet avgResults = query(avgSql);
+
+        HashMap<String, HashMap<String, String>> hours = new HashMap<>();
+        HashMap<String, String> total = new HashMap<>();
+        HashMap<String, String> min = new HashMap<>();
+        HashMap<String, String> max = new HashMap<>();
+        HashMap<String, String> avg = new HashMap<>();
+
+        CachedRowSet hoursResult = query(hoursSql);
+        CachedRowSet afkResult = query(afkSql);
+
+        try {
+            if(hoursResult.next()) {
+                total.put("all_time", hoursResult.getString(1));
+            }
+
+            if(afkResult.next()) {
+                total.put("afk", afkResult.getString(1));
+            }
+
+            if(minResults.next()) {
+                min.put("user", minResults.getString(1));
+                min.put("hours", minResults.getString(2));
+            }
+
+            if(maxResults.next()) {
+                max.put("user", maxResults.getString(1));
+                max.put("hours", maxResults.getString(2));
+            }
+
+            if(avgResults.next()) {
+                avg.put("hours", avgResults.getString(1));
+            }
+
+            hours.put("total", total);
+            hours.put("min", min);
+            hours.put("max", max);
+            hours.put("avg", avg);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return hours;
+    }
+
+    private String getWhereClause(String uuid) {
+        return uuid == null || uuid.isEmpty() ? "" : "WHERE user_id LIKE '" + uuid + "';";
     }
 
 }
