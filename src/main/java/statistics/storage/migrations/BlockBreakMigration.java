@@ -5,6 +5,8 @@ import statistics.storage.Migration;
 
 public class BlockBreakMigration {
 
+    public static final String INSERT = "INSERT INTO block_break (user_id, world, x, y, z, block_type, created_at) VALUES (?, ?, ?, ?, ?, ?, ?);";
+
     public BlockBreakMigration(ConnectionPoolManager pool) {
         Migration migration = new Migration(pool, "block_break");
         migration.index("id");

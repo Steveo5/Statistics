@@ -5,6 +5,8 @@ import statistics.storage.Migration;
 
 public class BlockPlaceMigration {
 
+    public static final String INSERT = "INSERT INTO block_place (user_id, world, x, y, z, block_type, created_at) VALUES (?, ?, ?, ?, ?, ?, ?);";
+
     public BlockPlaceMigration(ConnectionPoolManager pool) {
         Migration migration = new Migration(pool, "block_place");
         migration.index("id");

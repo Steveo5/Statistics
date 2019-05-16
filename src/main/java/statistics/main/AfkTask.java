@@ -2,6 +2,8 @@ package statistics.main;
 
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Iterator;
+
 public class AfkTask extends BukkitRunnable {
 
     private Statistics plugin;

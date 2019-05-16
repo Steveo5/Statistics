@@ -51,8 +51,8 @@ public final class Statistics extends JavaPlugin {
      * @param player
      * @return
      */
-    public static Session createSession(StatisticsPlayer player, SessionType type) {
-        Session session = new Session(type);
+    public static Session createSession(StatisticsPlayer player) {
+        Session session = new Session();
         session.setStarted(new Date());
 
         player.setSession(session);
@@ -60,8 +60,8 @@ public final class Statistics extends JavaPlugin {
         return session;
     }
 
-    protected static void unloadStatisticsPlayer(Player base) {
-        if(statisticsPlayers.containsKey(base.getUniqueId())) statisticsPlayers.remove(base.getUniqueId());
+    public static void unloadStatisticsPlayer(UUID id) {
+        statisticsPlayers.remove(id);
     }
 
     public static StatisticsPlayer getStatisticsPlayer(UUID uuid) {
@@ -92,5 +92,9 @@ public final class Statistics extends JavaPlugin {
 
     public static StatisticsReport getStatisticsReport() {
         return report;
+    }
+
+    public static Statistics getInstance() {
+        return statistics;
     }
 }

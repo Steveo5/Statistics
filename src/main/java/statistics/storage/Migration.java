@@ -19,37 +19,36 @@ public class Migration {
 
     public Migration index(String name) {
         tableData.add("`" + name + "` INT" + nullString(false) + " AUTO_INCREMENT");
-
         return this;
     }
 
     public Migration varchar(String name, int length, boolean allowsNull) {
         tableData.add("`" + name + "` VARCHAR(" + length + ")" + nullString(allowsNull));
-
         return this;
     }
 
     public Migration integer(String name, boolean allowsNull) {
         tableData.add("`" + name + "` INT" + nullString(allowsNull));
-
         return this;
     }
 
     public Migration doub(String name, boolean allowsNull) {
         tableData.add("`" + name + "` DOUBLE" + nullString(allowsNull));
+        return this;
+    }
 
+    public Migration json(String name) {
+        tableData.add("`" + name + "` JSON_TYPE NOT NULL");
         return this;
     }
 
     public Migration datetime(String name, boolean allowsNull) {
         tableData.add("`" + name + "` DATETIME" + nullString(allowsNull));
-
         return this;
     }
 
     public Migration primaryKey(String name) {
         tableData.add("PRIMARY KEY (`" + name + "`)");
-
         return this;
     }
 

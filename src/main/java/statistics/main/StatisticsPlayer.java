@@ -3,15 +3,20 @@ package statistics.main;
 import org.bukkit.entity.Player;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.UUID;
 
 public class StatisticsPlayer {
 
     private Player base;
+    private UUID id;
     private Session session;
     private boolean isAfk;
     private long lastActiveTime = System.currentTimeMillis();
+    private HashMap<SessionActionType, Long> lastActiveTimes = new HashMap<>();
 
     protected StatisticsPlayer(Player base) {
+        this.id = base.getUniqueId();
         this.base = base;
     }
 
@@ -36,16 +41,23 @@ public class StatisticsPlayer {
         return this.lastActiveTime;
     }
 
+    public long getLastActiveTime(SessionActionType sessionType) {
+        return lastActiveTimes.get(sessionType);
+    }
+
+    public void setLastActiveTime(SessionActionType sessionType, long time) {
+        lastActiveTimes.put(sessionType, time);
+    }
+
     public boolean isAfk() {
         return this.isAfk;
     }
 
     public void setAfk(boolean isAfk) {
 
-        // Start new session if the player was afk and now isn't
+        // Start new session action if the player was afk and now isn't
         if(this.isAfk && !isAfk) {
-            this.closeSession();
-            Statistics.createSession(this, SessionType.NORMAL);
+            getSession().getAction().end();
             System.out.println(this.getBase().getName() + " is now active");
         }
 
@@ -55,10 +67,14 @@ public class StatisticsPlayer {
             this.lastActiveTime = System.currentTimeMillis();
         } else {
             // Start new session if the player is set to afk
-            this.closeSession();
-            Statistics.createSession(this, SessionType.AFK);
+            getSession().beginAction(SessionActionType.AFK, getBase().getWorld());
+            //Statistics.createSession(this, SessionType.AFK);
             System.out.println(this.getBase().getName() + " is now afk");
         }
+    }
+
+    public UUID getId() {
+        return id;
     }
 
 }

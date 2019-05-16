@@ -5,6 +5,8 @@ import statistics.storage.Migration;
 
 public class PingMigration {
 
+    public static String INSERT = "INSERT INTO ping (user_id, ping, created_at) VALUES (?, ?, ?);";
+
     public PingMigration(ConnectionPoolManager pool) {
         Migration pingMigration = new Migration(pool, "ping");
         pingMigration.index("id");

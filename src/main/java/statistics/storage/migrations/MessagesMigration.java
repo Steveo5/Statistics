@@ -5,6 +5,8 @@ import statistics.storage.Migration;
 
 public class MessagesMigration {
 
+    public static final String INSERT = "INSERT INTO message (user_id, world, x, y, z, message, created_at) VALUES (?, ?, ?, ?, ?, ?, ?);";
+
     public MessagesMigration(ConnectionPoolManager pool) {
         Migration migration = new Migration(pool, "message");
         migration.index("id");

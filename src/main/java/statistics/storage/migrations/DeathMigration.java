@@ -5,6 +5,8 @@ import statistics.storage.Migration;
 
 public class DeathMigration {
 
+    public static final String INSERT = "INSERT INTO death (user_id, world, x, y, z, cause, created_at) VALUES (?, ?, ?, ?, ?, ?, ?);";
+
     public DeathMigration(ConnectionPoolManager pool) {
         Migration migration = new Migration(pool, "death");
         migration.index("id");

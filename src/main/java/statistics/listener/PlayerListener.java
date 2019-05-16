@@ -30,12 +30,12 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent evt) {
         Statistics.getStatisticsPlayer(evt.getPlayer()).setAfk(false);
-        Statistics.getMysqlConnector().saveMessage(evt.getPlayer(), evt.getMessage());
+        Statistics.getMysqlConnector().getStoreQueries().saveMessage(evt.getPlayer(), evt.getMessage());
     }
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent evt) {
-        Statistics.getMysqlConnector().saveDeath(evt.getEntity());
+        Statistics.getMysqlConnector().getStoreQueries().saveDeath(evt.getEntity());
     }
 
     @EventHandler
@@ -43,18 +43,19 @@ public class PlayerListener implements Listener {
         Player killer = evt.getEntity().getKiller();
 
         if(killer != null) {
-            Statistics.getMysqlConnector().saveKill(killer, evt.getEntity());
+            System.out.println("KILL " + killer + " " + evt.getEntity());
+            //Statistics.getMysqlConnector().saveKill(killer, evt.getEntity());
         }
     }
 
     @EventHandler
     public void onPlayerBreakBlock(BlockBreakEvent evt) {
-        Statistics.getMysqlConnector().saveBlockBreak(evt.getPlayer(), evt.getBlock());
+        Statistics.getMysqlConnector().getStoreQueries().saveBlockBreak(evt.getPlayer(), evt.getBlock());
     }
 
     @EventHandler
     public void onPlayerPlaceBlock(BlockPlaceEvent evt) {
-        Statistics.getMysqlConnector().saveBlockPlace(evt.getPlayer(), evt.getBlock());
+        Statistics.getMysqlConnector().getStoreQueries().saveBlockPlace(evt.getPlayer(), evt.getBlock());
     }
 
 }

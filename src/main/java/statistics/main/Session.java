@@ -1,5 +1,7 @@
 package statistics.main;
 
+import org.bukkit.World;
+
 import java.util.Date;
 import java.util.UUID;
 
@@ -7,11 +9,10 @@ public class Session {
 
     private Date started, finished;
     private UUID sessionId;
-    private SessionType sessionType;
+    private SessionAction currentAction;
 
-    public Session(SessionType type) {
+    public Session() {
         sessionId = UUID.randomUUID();
-        this.sessionType = type;
     }
 
     public Date getStarted() {
@@ -34,15 +35,29 @@ public class Session {
         return sessionId;
     }
 
-    public SessionType getType() {
-        return this.sessionType;
-    }
-
     /**
      * Save to database
      */
     public void save(StatisticsPlayer player) {
-        Statistics.getMysqlConnector().saveSession(player);
+        Statistics.getMysqlConnector().getStoreQueries().saveSession(player);
+    }
+
+    public void beginAction(SessionActionType type, World world) {
+
+        if(currentAction != null) {
+            currentAction.end();
+            currentAction.save(this.getSessionId());
+        }
+
+        currentAction = new SessionAction(type, world, new Date(), null);
+    }
+
+    /**
+     * Return the current action the player is performing
+     * @return may return null if the user isn't performing an action (such as just walking)
+     */
+    public SessionAction getAction() {
+        return currentAction;
     }
 
 }
