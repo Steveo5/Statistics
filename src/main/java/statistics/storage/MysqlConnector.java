@@ -3,13 +3,9 @@ package statistics.storage;
 import com.google.common.reflect.ClassPath;
 import com.sun.rowset.CachedRowSetImpl;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import statistics.main.Session;
 import statistics.main.Statistics;
-import statistics.main.StatisticsPlayer;
 import statistics.storage.queries.StoreQueries;
 
 import javax.sql.rowset.CachedRowSet;
@@ -19,7 +15,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 
 public class MysqlConnector {
 
@@ -57,41 +52,6 @@ public class MysqlConnector {
 
     public void onDisable() {
         pool.closePool();
-    }
-
-    public void saveKill(Player player, Entity entity) {
-        String uuid = player.getUniqueId().toString();
-        String entityUuid = entity.getUniqueId().toString();
-        String entityType = entity.getType().name();
-        String world = player.getWorld().getUID().toString();
-
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            saveKill(uuid, world, entityUuid, entityType);
-        });
-    }
-
-    private void saveKill(String uuid, String world, String entityUuid, String entityType) {
-        String sql = "INSERT INTO kill (user_id, world, entity_id, entity_type, created_at) VALUES (?, ?, ?, ?, ?);";
-
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        try {
-            conn = pool.getConnection();
-            stmt = conn.prepareStatement(sql);
-
-            stmt.setString(1, uuid);
-            stmt.setString(2, world);
-            stmt.setString(3, entityUuid);
-            stmt.setString(4, entityType);
-            stmt.setString(5, sdf.format(new Date()));
-
-            stmt.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            pool.close(conn, stmt, null);
-        }
     }
 
     public void reload() {

@@ -17,14 +17,14 @@ public class SessionTask extends BukkitRunnable {
                     System.out.println("Player " + player.getId().toString() + " is null");
                     pItr.remove();
                 } catch(Exception e) {
-
+                    e.printStackTrace();
                 }
-
-                continue;
             } else {
-                player.getSession().save(player);
-                if(player.getSession().getAction() != null)
+                player.getSession().save();
+
+                if(player.getSession().getAction() != null) {
                     player.getSession().getAction().save(player.getSession().getSessionId());
+                }
             }
         }
     }

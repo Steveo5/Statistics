@@ -13,7 +13,7 @@ public class StatisticsPlayer {
     private Session session;
     private boolean isAfk;
     private long lastActiveTime = System.currentTimeMillis();
-    private HashMap<SessionActionType, Long> lastActiveTimes = new HashMap<>();
+    protected HashMap<SessionActionType, Long> lastActiveTimes = new HashMap<>();
 
     protected StatisticsPlayer(Player base) {
         this.id = base.getUniqueId();
@@ -34,19 +34,25 @@ public class StatisticsPlayer {
 
     public void closeSession() {
         session.setFinished(new Date());
-        session.save(this);
+        session.save();
     }
 
     public long getLastActiveTime() {
         return this.lastActiveTime;
     }
 
+    // Get the time the player last did an action for this session actiont ype
     public long getLastActiveTime(SessionActionType sessionType) {
         return lastActiveTimes.get(sessionType);
     }
 
     public void setLastActiveTime(SessionActionType sessionType, long time) {
         lastActiveTimes.put(sessionType, time);
+    }
+
+    // Check whether the user is no longer performing this action based on a timeout
+    public boolean isInactive(SessionActionType sessionType, int timeout) {
+        return ((System.currentTimeMillis() - lastActiveTimes.get(sessionType)) / 1000) >= timeout;
     }
 
     public boolean isAfk() {
@@ -57,8 +63,7 @@ public class StatisticsPlayer {
 
         // Start new session action if the player was afk and now isn't
         if(this.isAfk && !isAfk) {
-            getSession().getAction().end();
-            System.out.println(this.getBase().getName() + " is now active");
+            getSession().stopAction();
         }
 
         this.isAfk = isAfk;
@@ -68,8 +73,6 @@ public class StatisticsPlayer {
         } else {
             // Start new session if the player is set to afk
             getSession().beginAction(SessionActionType.AFK, getBase().getWorld());
-            //Statistics.createSession(this, SessionType.AFK);
-            System.out.println(this.getBase().getName() + " is now afk");
         }
     }
 

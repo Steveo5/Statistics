@@ -43,8 +43,7 @@ public class PlayerListener implements Listener {
         Player killer = evt.getEntity().getKiller();
 
         if(killer != null) {
-            System.out.println("KILL " + killer + " " + evt.getEntity());
-            //Statistics.getMysqlConnector().saveKill(killer, evt.getEntity());
+            Statistics.getMysqlConnector().getStoreQueries().saveKill(killer, evt.getEntity());
         }
     }
 

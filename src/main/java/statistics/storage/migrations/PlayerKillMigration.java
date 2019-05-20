@@ -3,10 +3,12 @@ package statistics.storage.migrations;
 import statistics.storage.ConnectionPoolManager;
 import statistics.storage.Migration;
 
-public class KillMigration {
+public class PlayerKillMigration {
 
-    public KillMigration(ConnectionPoolManager pool) {
-        Migration migration = new Migration(pool, "kill");
+    public static final String INSERT = "INSERT INTO player_kill (user_id, world, entity_id, entity_type, created_at) VALUES (?, ?, ?, ?, ?);";
+
+    public PlayerKillMigration(ConnectionPoolManager pool) {
+        Migration migration = new Migration(pool, "player_kill");
         migration.index("id");
         migration.varchar("user_id", 255, false);
         migration.varchar("world", 255, false);

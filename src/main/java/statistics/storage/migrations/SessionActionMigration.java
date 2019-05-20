@@ -6,7 +6,7 @@ import statistics.storage.Migration;
 public class SessionActionMigration {
 
     public static final String INSERT = "INSERT INTO session_action (id, session_id, start_time, end_time, world_id, type)" +
-            "VALUES (?, ?, ?, ?, ?, ?)" +
+            " VALUES (?, ?, ?, ?, ?, ?)" +
             "ON DUPLICATE KEY UPDATE" +
             " start_time = ?, " +
             "end_time = ?;";

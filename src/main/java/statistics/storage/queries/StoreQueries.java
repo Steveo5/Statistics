@@ -3,9 +3,11 @@ package statistics.storage.queries;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import statistics.main.Session;
 import statistics.main.SessionAction;
+import statistics.main.Statistics;
 import statistics.main.StatisticsPlayer;
 import statistics.storage.Query;
 import statistics.storage.migrations.*;
@@ -87,6 +89,9 @@ public class StoreQueries {
                 stmt.setString(4, endTime);
                 stmt.setString(5, worldId);
                 stmt.setString(6, type);
+                stmt.setString(7, startTime);
+                stmt.setString(8, endTime);
+
             }
         };
     }
@@ -194,6 +199,29 @@ public class StoreQueries {
                 stmt.setDouble(5, z);
                 stmt.setString(6, message);
                 stmt.setString(7, sdf.format(new Date()));
+            }
+        };
+    }
+
+    public void saveKill(Player player, Entity entity) {
+        String uuid = player.getUniqueId().toString();
+        String entityUuid = entity.getUniqueId().toString();
+        String entityType = entity.getType().name();
+        String world = player.getWorld().getUID().toString();
+
+        Bukkit.getScheduler().runTaskAsynchronously(Statistics.getInstance(),
+                () -> saveKill(uuid, world, entityUuid, entityType));
+    }
+
+    public void saveKill(String uuid, String world, String entityUuid, String entityType) {
+        new Query(PlayerKillMigration.INSERT) {
+            @Override
+            public void run(PreparedStatement stmt) throws SQLException {
+                stmt.setString(1, uuid);
+                stmt.setString(2, world);
+                stmt.setString(3, entityUuid);
+                stmt.setString(4, entityType);
+                stmt.setString(5, sdf.format(new Date()));
             }
         };
     }

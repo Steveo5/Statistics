@@ -10,22 +10,22 @@ public class SessionAction {
     private UUID id;
     private SessionActionType type;
     private World world;
-    private Date startTime, endTime;
+    private Date startTime;
+    private long endTime;
 
     protected SessionAction(SessionActionType type, World world, Date startTime, Date endTime) {
         this.id = UUID.randomUUID();
         this.type = type;
         this.world = world;
         this.startTime = startTime;
-        this.endTime = endTime;
     }
 
     public UUID getId() {
         return id;
     }
 
-    protected void end() {
-        this.endTime = new Date();
+    public void update() {
+        this.endTime = System.currentTimeMillis();
     }
 
     public void save(UUID sessionId) {
@@ -44,8 +44,12 @@ public class SessionAction {
         return startTime;
     }
 
+    /**
+     * Return the date this session ended
+     * @return can return null if the session isn't finished yet
+     */
     public Date getEnded() {
-        return endTime;
+        return endTime < 1 ? null : new Date(endTime);
     }
 
 }

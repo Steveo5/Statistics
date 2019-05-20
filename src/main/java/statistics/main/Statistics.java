@@ -28,7 +28,7 @@ public final class Statistics extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 
         new SessionTask().runTaskTimer(this, 20L * 25L, 20L * 25L);
-        new AfkTask(this).runTaskTimer(this, 20L * 20L, 20L * 20L);
+        new SessionActionTask(this).runTaskTimer(this, 20L * 10L, 10L);
         pingTask = new PingTask().runTaskTimer(this, (20L * 60L) * getConfig().getInt("ping-interval"),
                 (20L * 60L) * getConfig().getInt("ping-interval"));
 
@@ -52,7 +52,7 @@ public final class Statistics extends JavaPlugin {
      * @return
      */
     public static Session createSession(StatisticsPlayer player) {
-        Session session = new Session();
+        Session session = new Session(player);
         session.setStarted(new Date());
 
         player.setSession(session);

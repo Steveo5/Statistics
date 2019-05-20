@@ -10,9 +10,11 @@ public class Session {
     private Date started, finished;
     private UUID sessionId;
     private SessionAction currentAction;
+    private StatisticsPlayer player;
 
-    public Session() {
+    public Session(StatisticsPlayer player) {
         sessionId = UUID.randomUUID();
+        this.player = player;
     }
 
     public Date getStarted() {
@@ -38,18 +40,27 @@ public class Session {
     /**
      * Save to database
      */
-    public void save(StatisticsPlayer player) {
+    public void save() {
         Statistics.getMysqlConnector().getStoreQueries().saveSession(player);
     }
 
     public void beginAction(SessionActionType type, World world) {
 
         if(currentAction != null) {
-            currentAction.end();
-            currentAction.save(this.getSessionId());
+            stopAction();
         }
 
+        System.out.println("Player " + player.getBase().getName() + " started " + type.name());
         currentAction = new SessionAction(type, world, new Date(), null);
+    }
+
+    public void stopAction() {
+
+        System.out.println("Player " + player.getBase().getName() + " stopped " + currentAction.getType().name());
+
+        currentAction.update();
+        currentAction.save(player.getId());
+        currentAction = null;
     }
 
     /**
@@ -58,6 +69,23 @@ public class Session {
      */
     public SessionAction getAction() {
         return currentAction;
+    }
+
+    /**
+     * Check if the player is doing a specific session action
+     * @param type the session action type enum
+     * @return boolean
+     */
+    public boolean isDoing(SessionActionType type) {
+        return player.getSession().getAction() != null && type == getAction().getType();
+    }
+
+    /**
+     * Check if the player is performing any known action
+     * @return boolean
+     */
+    public boolean isDoing() {
+        return player.getSession().getAction() != null;
     }
 
 }
