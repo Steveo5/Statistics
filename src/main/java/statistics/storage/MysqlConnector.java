@@ -133,7 +133,13 @@ public class MysqlConnector {
                             List<SessionAction> sessionActions = new ArrayList<SessionAction>();
 
                             while(rs.next()) {
-                                //SessionAction action = new SessionAction();
+                                SessionAction action = new SessionAction(UUID.fromString(rs.getString(1)),
+                                        SessionActionType.valueOf(rs.getString(6)),
+                                        Bukkit.getWorld(UUID.fromString(rs.getString(5))),
+                                        new Date(rs.getTimestamp(3).getTime()),
+                                        new Date(rs.getTimestamp(4).getTime()));
+
+                                sessionActions.add(action);
                             }
 
                             session.addHistory(sessionActions);
