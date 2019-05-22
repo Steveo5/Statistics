@@ -27,7 +27,7 @@ public final class Statistics extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new SessionListener(), this);
         this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 
-        new SessionTask().runTaskTimer(this, 20L * 25L, 20L * 25L);
+        new SessionSaveTask().runTaskTimer(this, 20L * 25L, 20L * 25L);
         new SessionActionTask(this).runTaskTimer(this, 20L * 10L, 10L);
         pingTask = new PingTask().runTaskTimer(this, (20L * 60L) * getConfig().getInt("ping-interval"),
                 (20L * 60L) * getConfig().getInt("ping-interval"));
@@ -66,6 +66,10 @@ public final class Statistics extends JavaPlugin {
 
     public static StatisticsPlayer getStatisticsPlayer(UUID uuid) {
         return getStatisticsPlayer(Bukkit.getPlayer(uuid));
+    }
+
+    public static StatisticsPlayer getOfflineStatisticsPlayer(UUID id) {
+        return new StatisticsPlayer(Bukkit.getOfflinePlayer(id));
     }
 
     public static StatisticsPlayer getStatisticsPlayer(Player player) {

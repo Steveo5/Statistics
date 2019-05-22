@@ -20,6 +20,11 @@ public class SessionAction {
         this.startTime = startTime;
     }
 
+    protected  SessionAction(UUID id, SessionActionType type, World world, Date startTime, Date endTime) {
+        this(type, world, startTime, endTime);
+        this.id = id;
+    }
+
     public UUID getId() {
         return id;
     }

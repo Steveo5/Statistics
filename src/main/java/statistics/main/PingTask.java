@@ -15,7 +15,7 @@ public class PingTask extends BukkitRunnable {
     public void run() {
         for(StatisticsPlayer player : Statistics.getStatisticsPlayers()) {
             Statistics.getMysqlConnector().getStoreQueries().savePing(player.getBase().getUniqueId().toString(),
-                    getPlayerPing(player.getBase()));
+                    getPlayerPing(player.getOnlineBase()));
         }
     }
 }

@@ -4,7 +4,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Iterator;
 
-public class SessionTask extends BukkitRunnable {
+public class SessionSaveTask extends BukkitRunnable {
 
     @Override
     public void run() {
@@ -21,10 +21,6 @@ public class SessionTask extends BukkitRunnable {
                 }
             } else {
                 player.getSession().save();
-
-                if(player.getSession().getAction() != null) {
-                    player.getSession().getAction().save(player.getSession().getSessionId());
-                }
             }
         }
     }

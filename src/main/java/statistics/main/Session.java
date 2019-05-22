@@ -1,18 +1,24 @@
 package statistics.main;
 
 import org.bukkit.World;
+import statistics.util.DateUtil;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class Session {
 
     private Date started, finished;
     private UUID sessionId;
     private SessionAction currentAction;
+    private List<SessionAction> previousActions;
     private StatisticsPlayer player;
 
     public Session(StatisticsPlayer player) {
+        previousActions = new ArrayList<>();
         sessionId = UUID.randomUUID();
         this.player = player;
     }
@@ -42,6 +48,11 @@ public class Session {
      */
     public void save() {
         Statistics.getMysqlConnector().getStoreQueries().saveSession(player);
+
+        // Save history as well
+        for(SessionAction sessionAction : getHistory()) {
+            sessionAction.save(this.getSessionId());
+        }
     }
 
     public void beginAction(SessionActionType type, World world) {
@@ -52,6 +63,7 @@ public class Session {
 
         System.out.println("Player " + player.getBase().getName() + " started " + type.name());
         currentAction = new SessionAction(type, world, new Date(), null);
+        previousActions.add(currentAction);
     }
 
     public void stopAction() {
@@ -86,6 +98,35 @@ public class Session {
      */
     public boolean isDoing() {
         return player.getSession().getAction() != null;
+    }
+
+    /**
+     * Get all previously performed session actions in this session
+     * @return SessionAction arraylist
+     */
+    public List<SessionAction> getHistory() {
+        return previousActions;
+    }
+
+    /**
+     * Add session actions to the history
+     * @param history
+     */
+    public void addHistory(List<SessionAction> history) {
+        this.previousActions.addAll(history);
+    }
+
+    public long timeBetween() {
+        return DateUtil.getDateDiff(getStarted(), getFinished(), TimeUnit.SECONDS);
+    }
+
+    /**
+     * Get the time between start and finish excluding these session action types
+     * @param filterType
+     * @return
+     */
+    public long timeBetween(SessionActionType... filterType) {
+        return 0;
     }
 
 }

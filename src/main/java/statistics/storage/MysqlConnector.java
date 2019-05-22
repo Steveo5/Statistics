@@ -3,18 +3,20 @@ package statistics.storage;
 import com.google.common.reflect.ClassPath;
 import com.sun.rowset.CachedRowSetImpl;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import statistics.main.Statistics;
+import statistics.main.*;
 import statistics.storage.queries.StoreQueries;
+import statistics.util.DateUtil;
 
 import javax.sql.rowset.CachedRowSet;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class MysqlConnector {
 
@@ -101,7 +103,52 @@ public class MysqlConnector {
         return ping;
     }
 
+    public void getSessions(NumberedListCallback callback, OfflinePlayer byPlayer) {
+
+        final NumberedList<Session> sessions = new NumberedList<>();
+
+        QueryBuilder queryBuilder = new QueryBuilder(pool).select("*").from("session");
+
+        if(byPlayer != null) queryBuilder.where("user_id", byPlayer.getUniqueId().toString(), "LIKE");
+
+        new Query(queryBuilder.get(), true) {
+
+            @Override
+            public void after(ResultSet rs) throws SQLException {
+                while(rs.next()) {
+                    Session session = new Session(Statistics.getOfflineStatisticsPlayer(UUID.fromString(rs.getString(2))));
+                    session.setStarted(new Date(rs.getTimestamp(3).getTime()));
+                    session.setFinished(new Date(rs.getTimestamp(4).getTime()));
+
+                    sessions.add(DateUtil.getDateDiff(session.getStarted(), session.getFinished(), TimeUnit.SECONDS), session);
+
+                    // Get the session actions
+                    new Query(new QueryBuilder(pool)
+                            .select("*")
+                            .from("session_action")
+                            .where("session_id", session.getSessionId().toString(), "LIKE").get()) {
+
+                        @Override
+                        public void after(ResultSet rs) throws SQLException {
+                            List<SessionAction> sessionActions = new ArrayList<SessionAction>();
+
+                            while(rs.next()) {
+                                //SessionAction action = new SessionAction();
+                            }
+
+                            session.addHistory(sessionActions);
+                        }
+                    };
+                }
+
+                callback.call(sessions);
+            }
+        };
+
+    }
+
     public HashMap<String, HashMap<String, String>> getHoursPlayed(String uuid) {
+
         String hoursSql = "SELECT SUM(TIME_TO_SEC(TIMEDIFF(logout_time, login_time))/3600) " +
                 "total_hours from session " + getWhereClause(uuid, false);
         String afkSql = "SELECT SUM(TIME_TO_SEC(TIMEDIFF(logout_time, login_time))/3600) " +

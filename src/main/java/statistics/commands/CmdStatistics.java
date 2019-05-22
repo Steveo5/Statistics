@@ -7,8 +7,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import statistics.main.Statistics;
-import statistics.main.StatisticsReport;
+import statistics.main.*;
+import statistics.util.DateUtil;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -26,11 +26,9 @@ public class CmdStatistics implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(args.length < 1) {
             if(!(sender instanceof Player)) {
-                StatisticsReport report = new StatisticsReport();
-                sender.sendMessage(report.getPingStatistics(null));
-                sender.sendMessage(report.getSessionStatistics(null));
+                sendSessionData(sender, null);
             } else {
-                sender.sendMessage(new StatisticsReport().getPingStatistics(((Player)sender).getUniqueId()));
+                sendSessionData(sender, (Player)sender);
             }
 
             return true;
@@ -45,13 +43,24 @@ public class CmdStatistics implements CommandExecutor {
             if(p == null || (p  != null && !p.hasPlayedBefore())) {
                 sender.sendMessage(ChatColor.RED + "You have entered an invalid player name");
             } else {
-                StatisticsReport report = new StatisticsReport();
-                sender.sendMessage(report.getPingStatistics(p.getUniqueId()));
-                sender.sendMessage(report.getSessionStatistics(p.getUniqueId()));
+                sendSessionData(sender, p);
             }
         }
 
         return true;
+    }
+
+    public void sendSessionData(CommandSender sender, OfflinePlayer byPlayer) {
+        Statistics.getMysqlConnector().getSessions(new NumberedListCallback() {
+
+            @Override
+            public void call(NumberedList<Session> sessions) {
+                sender.sendMessage("Average session time: " + DateUtil.formatSeconds(sessions.average()));
+                sender.sendMessage("Maximum session time: " + DateUtil.formatSeconds(sessions.getMax().timeBetween()));
+                sender.sendMessage("Minimum session time: " + DateUtil.formatSeconds(sessions.getMin().timeBetween()));
+                sender.sendMessage("Total time played: " + DateUtil.formatSeconds(sessions.sum()));
+            }
+        }, byPlayer);
     }
 
 }

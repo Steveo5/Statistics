@@ -42,8 +42,8 @@ public class StoreQueries {
         String finished = session.getFinished() == null ? sdf.format(new Date()) : sdf.format(session.getFinished());
         String sessionId = session.getSessionId().toString();
         String userId = player.getId().toString();
-        String ip = player.getBase().getAddress().getAddress().getHostAddress();
-        String world =  player.getBase().getWorld().getUID().toString();
+        String ip = player.getOnlineBase().getAddress().getAddress().getHostAddress();
+        String world =  player.getOnlineBase().getWorld().getUID().toString();
 
         this.saveSession(sessionId, userId, started, finished, ip, world);
 

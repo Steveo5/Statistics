@@ -1,5 +1,6 @@
 package statistics.main;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.util.Date;
@@ -8,7 +9,7 @@ import java.util.UUID;
 
 public class StatisticsPlayer {
 
-    private Player base;
+    private OfflinePlayer base;
     private UUID id;
     private Session session;
     private boolean isAfk;
@@ -20,9 +21,16 @@ public class StatisticsPlayer {
         this.base = base;
     }
 
-    public Player getBase() {
+    protected StatisticsPlayer(OfflinePlayer base) {
+        this.base = base;
+        this.id = base.getUniqueId();
+    }
+
+    public OfflinePlayer getBase() {
         return this.base;
     }
+
+    public Player getOnlineBase() { return (Player)this.base; }
 
     protected void setSession(Session session) {
         this.session = session;
@@ -72,7 +80,7 @@ public class StatisticsPlayer {
             this.lastActiveTime = System.currentTimeMillis();
         } else {
             // Start new session if the player is set to afk
-            getSession().beginAction(SessionActionType.AFK, getBase().getWorld());
+            getSession().beginAction(SessionActionType.AFK, ((Player)getBase()).getWorld());
         }
     }
 
